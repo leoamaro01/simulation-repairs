@@ -17,9 +17,6 @@ def simulate(n: int, s: int, get_explosion_time, get_repair_time, max_time = 0) 
     # list of upcoming events
     events = []
 
-    # list of computers
-    computers = []
-
     # event sort function
     def get_event_time(event: tuple[float, str, Computer]) -> float:
         return event[0]
@@ -38,7 +35,6 @@ def simulate(n: int, s: int, get_explosion_time, get_repair_time, max_time = 0) 
     # add the initial computers
     for i in range(n):
         c = Computer()
-        computers.append(c)
         events.append((time + get_explosion_time(0), explosion, c))
 
     sort_events()
@@ -48,7 +44,7 @@ def simulate(n: int, s: int, get_explosion_time, get_repair_time, max_time = 0) 
         time = e[0]
 
         if max_time > 0 and time > max_time:
-            return max_time
+            return time
 
         match e[1]:
             case type if type == explosion:
@@ -60,8 +56,6 @@ def simulate(n: int, s: int, get_explosion_time, get_repair_time, max_time = 0) 
 
                 backup = available_backups.pop()
                 events.append((time + get_explosion_time(backup.times_broken), explosion, backup))
-                computers.remove(e[2])
-                computers.append(backup)
 
                 if len(on_repair_backlog) == 0:
                     events.append((time + get_repair_time(), repair, e[2]))
