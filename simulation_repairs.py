@@ -75,8 +75,3 @@ def simulate(n: int, s: int, get_explosion_time, get_repair_time) -> float:
                     sort_events()
                 # else:
                 #     print("no more machines in backlog")
-
-
-from variables import weibull_distribution, exponential_distribution
-
-print(simulate(10, 10, weibull_distribution, exponential_distribution))
