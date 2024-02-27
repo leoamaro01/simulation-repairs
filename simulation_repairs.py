@@ -1,3 +1,11 @@
+class Computer:
+    def __init__(self) -> None:
+        self.times_broken = 0
+
+    def break_machine(self):
+        self.times_broken += 1
+
+
 def simulate(n: int, s: int, get_explosion_time, get_repair_time) -> float:
     # predefine event names
     explosion = "EXPLOSION"
@@ -9,19 +17,29 @@ def simulate(n: int, s: int, get_explosion_time, get_repair_time) -> float:
     # list of upcoming events
     events = []
 
+    # list of computers
+    computers = []
+
     # event sort function
-    def get_event_time(event: tuple[float, str]) -> float:
+    def get_event_time(event: tuple[float, str, Computer]) -> float:
         return event[0]
 
     def sort_events():
         events.sort(key=get_event_time, reverse=True)
 
-    available_backups = s
-    on_repair_backlog = 0
+    available_backups = []
+    on_repair_backlog = []
 
-    # add the initial explosion events
+    # add backup computers
+    for i in range(s):
+        c = Computer()
+        available_backups.append(c)
+
+    # add the initial computers
     for i in range(n):
-        events.append((time + get_explosion_time(), explosion))
+        c = Computer()
+        computers.append(c)
+        events.append((time + get_explosion_time(0), explosion, c))
 
     sort_events()
 
@@ -31,40 +49,34 @@ def simulate(n: int, s: int, get_explosion_time, get_repair_time) -> float:
 
         match e[1]:
             case type if type == explosion:
-                print(f"exploded on {time}")
-                if available_backups == 0:
+                # print(f"exploded on {time}")
+                if len(available_backups) == 0:
                     return time
                 
-                available_backups -= 1
-                events.append((time + get_explosion_time(), explosion))
+                e[2].break_machine()
 
-                if on_repair_backlog == 0:
-                    events.append((time + get_repair_time(), repair))
-                on_repair_backlog += 1
-                
+                backup = available_backups.pop()
+                events.append((time + get_explosion_time(backup.times_broken), explosion, backup))
+                computers.remove(e[2])
+                computers.append(backup)
+
+                if len(on_repair_backlog) == 0:
+                    events.append((time + get_repair_time(), repair, e[2]))
+                on_repair_backlog.append(e[2])
                 sort_events()
             case type if type == repair:
-                print(f"repaired on {time}")
-                available_backups += 1
-                on_repair_backlog -= 1
+                # print(f"repaired on {time}")
+                available_backups.append(e[2])
+                on_repair_backlog.remove(e[2])
 
-                if on_repair_backlog > 0:
-                    print("repairing next machine")
-                    events.append((time + get_repair_time(), repair))
+                if len(on_repair_backlog) > 0:
+                    # print("repairing next machine")
+                    events.append((time + get_repair_time(), repair, on_repair_backlog[0]))
                     sort_events()
-                else:
-                    print("no more machines in backlog")
+                # else:
+                #     print("no more machines in backlog")
 
 
-from random import random
+from variables import weibull_distribution, exponential_distribution
 
-max_repair_time = 10
-min_repair_time = 0
-
-min_explosion_time = 5
-max_explosion_time = 50
-
-def random_range(min, max):
-    return min + random() * (max - min)
-
-print(simulate(10, 10, lambda: random_range(min_explosion_time, max_explosion_time), lambda: random_range(min_repair_time, max_repair_time)))
+print(simulate(10, 10, weibull_distribution, exponential_distribution))
