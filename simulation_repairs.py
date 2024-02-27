@@ -6,7 +6,7 @@ class Computer:
         self.times_broken += 1
 
 
-def simulate(n: int, s: int, get_explosion_time, get_repair_time) -> float:
+def simulate(n: int, s: int, get_explosion_time, get_repair_time, max_time = 0) -> float:
     # predefine event names
     explosion = "EXPLOSION"
     repair = "REPAIR"
@@ -46,6 +46,9 @@ def simulate(n: int, s: int, get_explosion_time, get_repair_time) -> float:
     while len(events) > 0:
         e = events.pop()
         time = e[0]
+
+        if max_time > 0 and time > max_time:
+            return max_time
 
         match e[1]:
             case type if type == explosion:
