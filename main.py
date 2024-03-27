@@ -3,6 +3,8 @@ from variables import weibull_distribution, exponential_distribution
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+import pandas as pd
+import scipy.stats as stats
 from sklearn.preprocessing import StandardScaler
 
 # Check if directory exists and create it if not
@@ -12,20 +14,31 @@ if not os.path.exists('temp'):
 cant = [10, 20, 50, 100]
 ratios = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3]  # Define your ratios here
 runs = 20
-
 matrix = []
-
+table = []
 scaler = StandardScaler()
 
-for num in cant:
+for count ,num in enumerate(cant):
     y =[]
     for ratio in ratios:
-        s = int(num / ratio)
-        average = 0
+        s = int(num * ratio)
+        mean = 0
+        times = []
         for i in range(runs):
-            average += simulate(n=num, s=s, get_explosion_time=weibull_distribution, get_repair_time=exponential_distribution, max_time=0)
+            total_time = simulate(n=num, s=s, get_explosion_time=weibull_distribution, get_repair_time=exponential_distribution, max_time=0)
+            mean += total_time
+            times.append(total_time)
 
-        y.append(average / runs)
+        # Calculate mean
+        mean /= runs
+        # Calculate variance
+        variability = np.var(times)
+        # Calculate standard deviation
+        std_dev = np.std(times)
+        # Calculate confidence interval
+        confidence_interval = stats.norm.interval(0.95, loc=mean, scale=std_dev/np.sqrt(runs))
+        table.append([num, s, mean, variability, std_dev,confidence_interval])
+        y.append(mean)
     matrix.append(y)
 
     # Log normalization
@@ -70,3 +83,9 @@ for num in cant:
     plt.ylabel('Normalized Time')
     plt.title(f'N={num}, ZScore Normalized')
     plt.savefig(f'temp/plot_zscore_{num}.png')
+
+plt.show()
+
+# Print table
+table = pd.DataFrame(table,columns=['N', 'S', 'Average Time','Variance','Standard Deviation','Confidence Interval'])
+print(table)
