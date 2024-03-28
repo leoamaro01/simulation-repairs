@@ -84,8 +84,11 @@ for count ,num in enumerate(cant):
     plt.title(f'N={num}, ZScore Normalized')
     plt.savefig(f'temp/plot_zscore_{num}.png')
 
-plt.show()
 
-# Print table
+
 table = pd.DataFrame(table,columns=['N', 'S', 'Average Time','Variance','Standard Deviation','Confidence Interval'])
-print(table)
+print(table.head)
+with pd.ExcelWriter('results.xlsx') as writer:
+    table.to_excel(writer, sheet_name='Table', index=False)
+
+plt.show()
