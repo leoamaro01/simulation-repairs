@@ -21,7 +21,7 @@ scaler = StandardScaler()
 for count ,num in enumerate(cant):
     y =[]
     for ratio in ratios:
-        s = int(num * ratio)
+        s = int(num / ratio)
         mean = 0
         times = []
         for i in range(runs):
